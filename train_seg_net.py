@@ -34,6 +34,8 @@ net = model(input_image, num_classes, is_training=True, width_multiplier=1, scop
 
 # Define losses
 total_loss = IOU_calc_loss(tf.cast(input_mask, tf.float32), net)
+slim.summary.scalar("IoU_Loss", total_loss)
+summary_op = slim.summary.merge(tf.get_collection(tf.GraphKeys.SUMMARIES))
 
 # The op for initializing the variables.
 init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
@@ -58,7 +60,8 @@ with tf.Session(config=config) as sess:
 
     sys.stdout.write("\r>> The pipeline preparation was completed. Kicking-off training.")
     sys.stdout.flush()
-    slim.learning.train(train_op, log_dir, number_of_steps=int(1e6), save_summaries_secs=60 * 5, save_interval_secs=60 * 30)
+    slim.learning.train(train_op, log_dir, number_of_steps=int(1e6), save_summaries_secs=60 * 5,
+                        save_interval_secs=60 * 30, summary_op=summary_op)
 
     coord.request_stop()
     coord.join(threads)

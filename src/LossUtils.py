@@ -26,5 +26,4 @@ def IOU_calc(y_true, y_pred):
 def IOU_calc_loss(y_true, y_pred):
     with variable_scope("IoU_Loss"):
         total_loss = identity(1.0-IOU_calc(y_true, y_pred), name="loss")
-        tf.summary.scalar("IoU_loss", total_loss, tf.GraphKeys.SUMMARIES)
         return total_loss
