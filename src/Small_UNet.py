@@ -11,7 +11,7 @@ import tensorflow.contrib.slim as slim
 
 from .NetUtils import _depthwise_separable_conv, _upsample, _lateral_connection
 
-def model(inputs, num_classes=1, is_training=True, width_multiplier=1, scope='MobileNet'):
+def model(inputs, num_classes=1, is_training=True, keep_prob=0.5, width_multiplier=1, scope='MobileNet'):
     with tf.variable_scope(scope) as sc:
         end_points_collection = sc.name + '_end_points'
         with slim.arg_scope([slim.convolution2d, slim.separable_convolution2d],
@@ -21,25 +21,20 @@ def model(inputs, num_classes=1, is_training=True, width_multiplier=1, scope='Mo
                                 is_training=is_training,
                                 activation_fn=tf.nn.relu):
 
-                inputs = tf.cast(inputs, tf.float32)
+                inputs = tf.identity(tf.cast(inputs, tf.float32) / 127.5 - 1.0, name="normalized_input")
 
                 c1 = slim.convolution2d(inputs, round(32 * width_multiplier), [3, 3], padding='SAME', scope='conv_1')
                 c1 = slim.batch_norm(c1, scope='conv_1/pw_batch_norm')
 
                 c2  = _depthwise_separable_conv(c1, 64, width_multiplier, downsample=True, sc='conv_ds_2')
-                #c2  = _depthwise_separable_conv(c2, 64, width_multiplier, sc='conv_2')
                 c3 = _depthwise_separable_conv(c2, 128, width_multiplier, downsample=True, sc='conv_ds_3')
-                #c3 = _depthwise_separable_conv(c3, 128, width_multiplier, sc='conv_3')
                 c4 = _depthwise_separable_conv(c3, 256, width_multiplier, downsample=True, sc='conv_ds_4')
-                #c4 = _depthwise_separable_conv(c4, 256, width_multiplier, sc='conv_4')
                 c5 = _depthwise_separable_conv(c4, 512, width_multiplier, downsample=True, sc='conv_ds_5')
-                #c5 = _depthwise_separable_conv(c5, 512, width_multiplier, sc='conv_5')
                 c6 = _depthwise_separable_conv(c5, 1024, width_multiplier, downsample=True, sc='conv_ds_6')
-                #c6 = _depthwise_separable_conv(c6, 1024, width_multiplier, sc='conv_6')
                 c7 = _depthwise_separable_conv(c6, 1024, width_multiplier, downsample=True, sc='conv_ds_7')
-                #c7 = _depthwise_separable_conv(c7, 1024, width_multiplier, sc='conv_7')
                 c8 = _depthwise_separable_conv(c7, 1024, width_multiplier, downsample=True, sc='conv_ds_8')
                 c8 = _depthwise_separable_conv(c8, 1024, width_multiplier, sc='conv_8')
+                c8 = slim.dropout(c8, keep_prob)
 
                 # Upsampling path
 

@@ -11,15 +11,23 @@ from src.DataReader import read_and_decode
 from src.Small_UNet import model
 from src.LossUtils import IOU_calc_loss
 from tensorflow.contrib import slim
+from tensorflow.python.platform.app import flags
 import tensorflow as tf
 import sys
+
+FLAGS = flags.FLAGS
+flags.DEFINE_bool("restore", True, "Do you want to restore a model? Default value is True.")
+flags.DEFINE_float("learning_rate", 1e-4, "Provide a value for learning rate. Default value is 1e-4")
+flags.DEFINE_float("width", 0.5, "Set the net width multiple. Default is 0.5. Type Float")
+flags.DEFINE_string("log_dir", "logs", "Provide logging directory for recovering and storing model. Default value is logs")
 
 
 # Define main drivers
 tfrecords_path = "dataset/field_segmentation.tfrecords"
-log_dir = "logs"
-learning_rate = 1e-3
+log_dir = FLAGS.log_dir
+learning_rate = FLAGS.learning_rate
 num_classes = 1
+restore_model = FLAGS.restore
 
 # Define data provider
 sys.stdout.write("\r>> Initializing dataprovider")
@@ -30,7 +38,7 @@ input_image, input_mask = read_and_decode(file_queue, IMAGE_HEIGHT=512, IMAGE_WI
 # Define net
 sys.stdout.write("\r>> Dataprovider was initialized successfully. Starting Net initialization.")
 sys.stdout.flush()
-net = model(input_image, num_classes, is_training=True, width_multiplier=1, scope="Mobile_UNet")
+net = model(input_image, num_classes, is_training=True, keep_prob=FLAGS.width, width_multiplier=1, scope="Mobile_UNet")
 
 # Define losses
 total_loss = IOU_calc_loss(tf.cast(input_mask, tf.float32), net)
@@ -54,6 +62,14 @@ train_op = slim.learning.create_train_op(total_loss, optimizer)
 with tf.Session(config=config) as sess:
 
     sess.run(init_op)
+
+    if restore_model:
+        sys.stdout.write("\r>> Restoring trainable variables.")
+        sys.stdout.flush()
+        variable_to_restore = slim.get_variables_to_restore()
+        restorer = tf.train.Saver(variable_to_restore)
+        latest_checkpoint = tf.train.latest_checkpoint(log_dir)
+        restorer.restore(sess, latest_checkpoint)
 
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
