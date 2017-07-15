@@ -9,7 +9,7 @@ __email__ = "alex.ponamaryov@gmail.com"
 import tensorflow as tf
 from tensorflow import TFRecordReader, parse_single_example, FixedLenFeature
 
-def read_and_decode(filename_queue, IMAGE_HEIGHT, IMAGE_WIDTH, num_classes=1):
+def read_and_decode(filename_queue, IMAGE_HEIGHT, IMAGE_WIDTH, num_classes=1, batch_size=5):
     reader = TFRecordReader()
 
     _, serialized_example = reader.read(filename_queue)
@@ -43,17 +43,8 @@ def read_and_decode(filename_queue, IMAGE_HEIGHT, IMAGE_WIDTH, num_classes=1):
     # Random transformations can be put here: right before you crop images
     # to predefined size. To get more information look at the stackoverflow
     # question linked above.
-    """
-    resized_image = tf.image.resize_image_with_crop_or_pad(image=image,
-                                                           target_height=IMAGE_HEIGHT,
-                                                           target_width=IMAGE_WIDTH)
-
-    resized_annotation = tf.image.resize_image_with_crop_or_pad(image=mask,
-                                                                target_height=IMAGE_HEIGHT,
-                                                                target_width=IMAGE_WIDTH)
-    """
     images, annotations = tf.train.shuffle_batch([image, mask],
-                                                 batch_size=2,
+                                                 batch_size=batch_size,
                                                  capacity=30,
                                                  num_threads=2,
                                                  min_after_dequeue=10)

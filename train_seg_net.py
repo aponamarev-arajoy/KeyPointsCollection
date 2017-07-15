@@ -18,7 +18,8 @@ import sys
 FLAGS = flags.FLAGS
 flags.DEFINE_bool("restore", False, "Do you want to restore a model? Default value is True.")
 flags.DEFINE_float("learning_rate", 1e-4, "Provide a value for learning rate. Default value is 1e-4")
-flags.DEFINE_float("width", 0.5, "Set the net width multiple. Default is 1.0. Type Float")
+flags.DEFINE_float("width", 1.0, "Set the net width multiple. Default is 1.0. Type Float")
+flags.DEFINE_integer("batch_size", 5, "Set the size of the mini-batch. Default value: 5. Type Float")
 flags.DEFINE_string("log_dir", "logs", "Provide logging directory for recovering and storing model. Default value is logs")
 
 
@@ -33,7 +34,8 @@ restore_model = FLAGS.restore
 sys.stdout.write("\r>> Initializing dataprovider")
 sys.stdout.flush()
 file_queue = tf.train.string_input_producer([tfrecords_path])
-input_image, input_mask = read_and_decode(file_queue, IMAGE_HEIGHT=512, IMAGE_WIDTH=1024, num_classes=num_classes)
+input_image, input_mask = read_and_decode(file_queue, IMAGE_HEIGHT=512, IMAGE_WIDTH=1024,
+                                          num_classes=num_classes, batch_size=FLAGS.batch_size)
 
 # Define net
 sys.stdout.write("\r>> Dataprovider was initialized successfully. Starting Net initialization.")
