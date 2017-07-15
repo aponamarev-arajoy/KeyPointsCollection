@@ -20,8 +20,9 @@ def _depthwise_separable_conv(inputs, num_pwc_filters, width_multiplier, sc='/de
     _stride = 2 if downsample else 1
 
     # skip pointwise by setting num_outputs=None
-    conv = separable_convolution2d(inputs, num_outputs=num_pwc_filters, stride=_stride, depth_multiplier=1,
-                                   kernel_size=[3, 3], scope=sc + '/depthwise_conv')
+    conv = separable_convolution2d(inputs, num_outputs=None, stride=_stride, depth_multiplier=1,
+                                   kernel_size=3, scope=sc + '/depthwise_conv')
+    conv = convolution2d(conv, num_pwc_filters, kernel_size=1, scope=sc + '/pointwise_conv')
 
     return conv
 

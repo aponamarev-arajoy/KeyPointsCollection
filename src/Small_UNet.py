@@ -15,16 +15,16 @@ def model(inputs, num_classes=1, is_training=True, keep_prob=0.5, width_multipli
     with tf.variable_scope(scope) as sc:
         end_points_collection = sc.name + '_end_points'
         with slim.arg_scope([slim.convolution2d, slim.separable_convolution2d],
-                            activation_fn=None,
-                            normalizer_fn=slim.batch_norm):
+                            activation_fn=tf.nn.relu,
+                            normalizer_fn=None):
             with slim.arg_scope([slim.batch_norm],
                                 is_training=is_training,
-                                activation_fn=tf.nn.relu):
+                                activation_fn=None):
 
                 inputs = tf.identity(tf.cast(inputs, tf.float32) / 127.5 - 1.0, name="normalized_input")
 
                 c1 = slim.convolution2d(inputs, round(32 * width_multiplier), [3, 3], padding='SAME', scope='conv_1')
-                c1 = slim.batch_norm(c1, scope='conv_1/pw_batch_norm')
+                #c1 = slim.batch_norm(c1, scope='conv_1/pw_batch_norm')
 
                 c2  = _depthwise_separable_conv(c1, 64, width_multiplier, downsample=True, sc='conv_ds_2')
                 c3 = _depthwise_separable_conv(c2, 128, width_multiplier, downsample=True, sc='conv_ds_3')
@@ -37,20 +37,19 @@ def model(inputs, num_classes=1, is_training=True, keep_prob=0.5, width_multipli
                 c8 = slim.dropout(c8, keep_prob)
 
                 # Upsampling path
-
-                up7 = _deconv(c8, 1024, width_multiplier, "up7")
+                up7 = _deconv(c8, 1024, width_multiplier, sc="up7")
                 up7 = _lateral_connection(up7, c7, 1024, width_multiplier, "l7")
-                up6 = _deconv(up7, 1024, width_multiplier, "up6")
+                up6 = _deconv(up7, 1024, width_multiplier, sc="up6")
                 up6 = _lateral_connection(up6, c6, 1024, width_multiplier, "l6")
-                up5 = _deconv(up6, 512, width_multiplier, "up5")
+                up5 = _deconv(up6, 512, width_multiplier, sc="up5")
                 up5 = _lateral_connection(up5, c5, 512, width_multiplier, "l5")
-                up4 = _deconv(up5, 256, width_multiplier, "up4")
+                up4 = _deconv(up5, 256, width_multiplier, sc="up4")
                 up4 = _lateral_connection(up4, c4, 256, width_multiplier, "l4")
-                up3 = _deconv(up4, 128, width_multiplier, "up3")
+                up3 = _deconv(up4, 128, width_multiplier, sc="up3")
                 up3 = _lateral_connection(up3, c3, 128, width_multiplier, "l3")
-                up2 = _deconv(up3, 64, width_multiplier, "up2")
+                up2 = _deconv(up3, 64, width_multiplier, sc="up2")
                 up2 = _lateral_connection(up2, c2, 64, width_multiplier, "l2")
-                up1 = _deconv(up2, 32, width_multiplier, "up1")
+                up1 = _deconv(up2, 32, width_multiplier, sc="up1")
                 end_point = _lateral_connection(up1, c1, num_classes, 1, "l1")
                 end_point = tf.sigmoid(end_point, name="class_confidence")
                 tf.add_to_collection(end_points_collection, end_point)

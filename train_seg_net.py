@@ -16,9 +16,9 @@ import tensorflow as tf
 import sys
 
 FLAGS = flags.FLAGS
-flags.DEFINE_bool("restore", True, "Do you want to restore a model? Default value is True.")
+flags.DEFINE_bool("restore", False, "Do you want to restore a model? Default value is True.")
 flags.DEFINE_float("learning_rate", 1e-4, "Provide a value for learning rate. Default value is 1e-4")
-flags.DEFINE_float("width", 1.0, "Set the net width multiple. Default is 1.0. Type Float")
+flags.DEFINE_float("width", 0.5, "Set the net width multiple. Default is 1.0. Type Float")
 flags.DEFINE_string("log_dir", "logs", "Provide logging directory for recovering and storing model. Default value is logs")
 
 
@@ -47,7 +47,7 @@ slim.summary.scalar("IoU_Loss", total_loss)
 summary_op = slim.summary.merge(tf.get_collection(tf.GraphKeys.SUMMARIES))
 
 # The op for initializing the variables.
-init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
+# init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
 
 # Configure session
 sys.stdout.write("\r>> Net was initialized successfully. Preparing computational session.")
@@ -61,8 +61,6 @@ optimizer = tf.train.AdamOptimizer(learning_rate)
 train_op = slim.learning.create_train_op(total_loss, optimizer)
 
 with tf.Session(config=config) as sess:
-
-    sess.run(init_op)
 
     if restore_model:
         sys.stdout.write("\r>> Restoring trainable variables.")
