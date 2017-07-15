@@ -18,7 +18,7 @@ import sys
 FLAGS = flags.FLAGS
 flags.DEFINE_bool("restore", True, "Do you want to restore a model? Default value is True.")
 flags.DEFINE_float("learning_rate", 1e-4, "Provide a value for learning rate. Default value is 1e-4")
-flags.DEFINE_float("width", 0.5, "Set the net width multiple. Default is 0.5. Type Float")
+flags.DEFINE_float("width", 1.0, "Set the net width multiple. Default is 1.0. Type Float")
 flags.DEFINE_string("log_dir", "logs", "Provide logging directory for recovering and storing model. Default value is logs")
 
 
@@ -38,7 +38,8 @@ input_image, input_mask = read_and_decode(file_queue, IMAGE_HEIGHT=512, IMAGE_WI
 # Define net
 sys.stdout.write("\r>> Dataprovider was initialized successfully. Starting Net initialization.")
 sys.stdout.flush()
-net = model(input_image, num_classes, is_training=True, keep_prob=FLAGS.width, width_multiplier=1, scope="Mobile_UNet")
+net = model(input_image, num_classes, is_training=True, keep_prob=FLAGS.width,
+            width_multiplier=FLAGS.width, scope="Mobile_UNet")
 
 # Define losses
 total_loss = IOU_calc_loss(tf.cast(input_mask, tf.float32), net)
