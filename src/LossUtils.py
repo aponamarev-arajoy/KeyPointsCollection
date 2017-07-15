@@ -18,9 +18,9 @@ def IOU_calc(y_true, y_pred):
         y_true_f = flatten(y_true)
         y_pred_f = flatten(y_pred)
         intersection = reduce_sum(y_true_f * y_pred_f, axis=-1, name="intersection")
-        union = identity(reduce_sum(y_true_f, axis=-1) + reduce_sum(y_pred_f, axis=-1), name="union")
+        union = identity(reduce_sum(y_true_f + y_pred_f, axis=-1)-intersection, name="union")
 
-        return reduce_mean(2*(intersection + smooth) / (union + smooth), name="IoU_smoothed")
+        return reduce_mean((intersection + smooth) / (union + smooth), name="IoU_smoothed")
 
 
 def IOU_calc_loss(y_true, y_pred):
