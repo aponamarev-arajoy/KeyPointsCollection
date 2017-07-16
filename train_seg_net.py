@@ -75,6 +75,8 @@ with tf.Session(config=config) as sess:
 
     sys.stdout.write("\r>> The pipeline preparation was completed. Kicking-off training.")
     sys.stdout.flush()
+    if tf.gfile.Exists(log_dir):
+        tf.gfile.DeleteRecursively(log_dir)
     slim.learning.train(train_op, log_dir, number_of_steps=int(1e6), save_summaries_secs=60 * 5,
                         save_interval_secs=60 * 30, summary_op=summary_op)
 
