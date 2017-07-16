@@ -12,16 +12,17 @@ import tensorflow.contrib.slim as slim
 from .NetUtils import _depthwise_separable_conv, _deconv, _lateral_connection
 
 def model(inputs, num_classes=1, is_training=True, keep_prob=0.5, width_multiplier=1, scope='MobileNet'):
+
     with tf.variable_scope(scope) as sc:
         end_points_collection = sc.name + '_end_points'
         with slim.arg_scope([slim.convolution2d, slim.separable_convolution2d],
-                            activation_fn=tf.nn.relu,
-                            normalizer_fn=None):
+                            activation_fn=None,
+                            normalizer_fn=slim.batch_norm):
             with slim.arg_scope([slim.batch_norm],
                                 is_training=is_training,
-                                activation_fn=None):
+                                activation_fn=tf.nn.relu):
 
-                inputs = tf.identity(tf.cast(inputs, tf.float32) / 255.0, name="normalized_input")
+                inputs = tf.identity(tf.cast(inputs, tf.float32) / 255.0, name=sc.name+"/input/image/norm_0_1")
 
                 c1 = slim.convolution2d(inputs, round(32 * width_multiplier), 3, stride=2, padding='SAME', scope='conv_1')
 
