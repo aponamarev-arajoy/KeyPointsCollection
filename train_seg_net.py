@@ -49,9 +49,6 @@ total_loss = IOU_calc_loss(tf.cast(input_mask, tf.float32), net)
 slim.summary.scalar("IoU_Loss", total_loss)
 summary_op = slim.summary.merge(tf.get_collection(tf.GraphKeys.SUMMARIES))
 
-# The op for initializing the variables.
-# init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
-
 # Configure session
 sys.stdout.write("\r>> Net was initialized successfully. Preparing computational session.")
 sys.stdout.flush()

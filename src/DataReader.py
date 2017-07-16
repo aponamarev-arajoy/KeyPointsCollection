@@ -31,10 +31,10 @@ def distort_color(image, color_ordering=0, fast_mode=True, scope=None):
     if fast_mode:
       if color_ordering == 0:
         image = tf.image.random_brightness(image, max_delta=48. / 255.)
-        image = tf.image.random_saturation(image, lower=0.2, upper=1.5)
+        #image = tf.image.random_saturation(image, lower=0.2, upper=1.5)
       else:
         image = tf.image.random_saturation(image, lower=0.2, upper=1.5)
-        image = tf.image.random_brightness(image, max_delta=48. / 255.)
+        #image = tf.image.random_brightness(image, max_delta=48. / 255.)
     else:
       if color_ordering == 0:
         image = tf.image.random_brightness(image, max_delta=32. / 255.)
@@ -60,7 +60,7 @@ def distort_color(image, color_ordering=0, fast_mode=True, scope=None):
         raise ValueError('color_ordering must be in [0, 3]')
 
     # The random_* ops do not necessarily clamp.
-    return tf.clip_by_value(image, -1.0, 1.0)
+    return tf.clip_by_value(image, 0.0, 1.0)
 
 
 def random_flip_left_right_segmentation(img, mask):
@@ -115,9 +115,9 @@ def read_and_decode(filename_queue, IMAGE_HEIGHT, IMAGE_WIDTH, num_classes=1, ba
                                                  num_threads=2,
                                                  min_after_dequeue=10)
 
-    images = tf.identity(tf.cast(images, tf.float32) / 255.0, name="img_in_-1_1_range")
-
     if color_dist:
+
+        images = tf.identity(tf.cast(images, tf.float32) / 255.0, name="img_in_-1_1_range")
 
         def prep_data_augment(im):
             im = distort_color(im, color_ordering=0, fast_mode=True)
@@ -126,6 +126,8 @@ def read_and_decode(filename_queue, IMAGE_HEIGHT, IMAGE_WIDTH, num_classes=1, ba
         images = tf.map_fn(prep_data_augment, images)
         images, annotations = tf.map_fn(lambda x: random_flip_left_right_segmentation(x[0], x[1]),
                                         (images, annotations), dtype=(tf.float32, tf.uint8))
+
+        images = tf.identity(tf.cast(images * 255.0, tf.uint8), name="img_augmented")
 
 
     return images, annotations

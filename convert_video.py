@@ -31,6 +31,7 @@ flags.DEFINE_bool("restore", True, "Do you want to restore a model? Default valu
 flags.DEFINE_string("log_dir", "logs", "Provide logging directory for recovering and storing model. Default value is logs")
 flags.DEFINE_string("video", "video.mp4", "Provide a relative path to a video file to be processed. Default value: video.mpg")
 flags.DEFINE_string("save_to", "output_video.mp4", "Provide a relative path for a resulting video. Default value: output_video.mp4")
+flags.DEFINE_float("width", 1.0, "Set the net width multiple. Default is 1.0. Type Float")
 
 computation = {"segmentation_layer": None, "input_img_placeholder": None, "session": None}
 
@@ -48,7 +49,8 @@ def main():
     sys.stdout.write("\r>> Initializing UNet")
     sys.stdout.flush()
 
-    net = model(input_image, num_classes, is_training=False, keep_prob=1.0, width_multiplier=1, scope="Mobile_UNet")
+    net = model(input_image, num_classes, is_training=False, keep_prob=1.0,
+                width_multiplier=FLAGS.width, scope="Mobile_UNet")
 
     # Configure session
     sys.stdout.write("\r>> Net was initialized successfully. Preparing computational session.")
