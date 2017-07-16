@@ -102,7 +102,6 @@ def read_and_decode(filename_queue, IMAGE_HEIGHT, IMAGE_WIDTH, num_classes=1, ba
     image_size_const = tf.constant((IMAGE_HEIGHT, IMAGE_WIDTH, 3), dtype=tf.int32)
     mask_size_const = tf.constant((IMAGE_HEIGHT, IMAGE_WIDTH, num_classes), dtype=tf.int32)
 
-
     image = tf.reshape(image, image_size_const)
     mask = tf.reshape(mask, mask_size_const)
 

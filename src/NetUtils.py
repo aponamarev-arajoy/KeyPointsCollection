@@ -35,6 +35,9 @@ def _deconv(input, num_pwc_filters, width_multiplier=1, strides=2, padding="SAME
     return conv
 
 
-def _lateral_connection(td, dt, num_pwc_filters, width_multiplier, sc):
-    output = _concat((td, dt), name=sc+"/merge")
+def _lateral_connection(top_down, bottom_up, num_pwc_filters, width_multiplier, sc, lateral_gradient_stop=False):
+    if lateral_gradient_stop:
+        bottom_up = tf.stop_gradient(bottom_up)
+
+    output = _concat((top_down, bottom_up), name=sc + "/merge")
     return _depthwise_separable_conv(output, num_pwc_filters, width_multiplier, sc=sc+"/force_choice")

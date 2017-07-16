@@ -73,8 +73,6 @@ with tf.Session(config=config) as sess:
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
-    viz_imgs, viz_masks = sess.run([input_image, input_mask])
-
     sys.stdout.write("\r>> The pipeline preparation was completed. Kicking-off training.")
     sys.stdout.flush()
     slim.learning.train(train_op, log_dir, number_of_steps=int(1e6), save_summaries_secs=60 * 5,
