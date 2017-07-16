@@ -12,6 +12,7 @@ from src.Small_UNet import model
 from src.LossUtils import IOU_calc_loss
 from tensorflow.contrib import slim
 from tensorflow.python.platform.app import flags
+from matplotlib import pyplot as plt
 import tensorflow as tf
 import sys
 
@@ -35,7 +36,7 @@ sys.stdout.write("\r>> Initializing dataprovider")
 sys.stdout.flush()
 file_queue = tf.train.string_input_producer([tfrecords_path])
 input_image, input_mask = read_and_decode(file_queue, IMAGE_HEIGHT=512, IMAGE_WIDTH=1024,
-                                          num_classes=num_classes, batch_size=FLAGS.batch_size)
+                                          num_classes=num_classes, batch_size=FLAGS.batch_size, color_dist=True)
 
 # Define net
 sys.stdout.write("\r>> Dataprovider was initialized successfully. Starting Net initialization.")
@@ -74,6 +75,8 @@ with tf.Session(config=config) as sess:
 
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+
+    viz_imgs, viz_masks = sess.run([input_image, input_mask])
 
     sys.stdout.write("\r>> The pipeline preparation was completed. Kicking-off training.")
     sys.stdout.flush()

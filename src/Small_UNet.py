@@ -21,7 +21,7 @@ def model(inputs, num_classes=1, is_training=True, keep_prob=0.5, width_multipli
                                 is_training=is_training,
                                 activation_fn=None):
 
-                inputs = tf.identity(tf.cast(inputs, tf.float32) / 127.5 - 1.0, name="normalized_input")
+                inputs = tf.identity(tf.cast(inputs, tf.float32) / 255.0, name="normalized_input")
 
                 c1 = slim.convolution2d(inputs, round(32 * width_multiplier), [3, 3], padding='SAME', scope='conv_1')
                 #c1 = slim.batch_norm(c1, scope='conv_1/pw_batch_norm')
