@@ -16,9 +16,10 @@ def model(inputs, num_classes=1, is_training=True, keep_prob=0.5, width_multipli
     with tf.variable_scope(scope) as sc:
         end_points_collection = sc.name + '_end_points'
         with slim.arg_scope([slim.convolution2d, slim.separable_convolution2d],
-                            activation_fn=None):
+                            activation_fn=None,
+                            normalizer_fn=slim.batch_norm,
+                            normalizer_params={'is_training': is_training, 'decay':0.95}):
             with slim.arg_scope([slim.batch_norm],
-                                is_training=is_training,
                                 activation_fn=tf.nn.relu):
 
                 inputs = tf.identity(tf.cast(inputs, tf.float32) / 255.0, name=sc.name+"/input/image/norm_0_1")

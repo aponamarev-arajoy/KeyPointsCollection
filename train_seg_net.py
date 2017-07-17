@@ -12,13 +12,12 @@ from src.Small_UNet import model
 from src.LossUtils import IOU_calc_loss
 from tensorflow.contrib import slim
 from tensorflow.python.platform.app import flags
-from matplotlib import pyplot as plt
 import tensorflow as tf
 import sys
 
 FLAGS = flags.FLAGS
 flags.DEFINE_bool("restore", False, "Do you want to restore a model? Default value is True.")
-flags.DEFINE_float("learning_rate", 1e-4, "Provide a value for learning rate. Default value is 1e-4")
+flags.DEFINE_float("learning_rate", 1e-3, "Provide a value for learning rate. Default value is 1e-3")
 flags.DEFINE_float("width", 1.0, "Set the net width multiple. Default is 1.0. Type Float")
 flags.DEFINE_integer("batch_size", 5, "Set the size of the mini-batch. Default value: 5. Type Float")
 flags.DEFINE_string("log_dir", "logs", "Provide logging directory for recovering and storing model. Default value is logs")
@@ -30,6 +29,7 @@ log_dir = FLAGS.log_dir
 learning_rate = FLAGS.learning_rate
 num_classes = 1
 restore_model = FLAGS.restore
+is_training = tf.placeholder(tf.bool, [], name="Mobile_UNet/input/is_training")
 
 # Define data provider
 sys.stdout.write("\r>> Initializing dataprovider")
@@ -41,6 +41,7 @@ input_image, input_mask = read_and_decode(file_queue, IMAGE_HEIGHT=512, IMAGE_WI
 # Define net
 sys.stdout.write("\r>> Dataprovider was initialized successfully. Starting Net initialization.")
 sys.stdout.flush()
+
 net = model(input_image, num_classes, is_training=True, keep_prob=FLAGS.width,
             width_multiplier=FLAGS.width, scope="Mobile_UNet")
 
@@ -66,9 +67,9 @@ with tf.Session(config=config) as sess:
         sys.stdout.write("\r>> Restoring trainable variables.")
         sys.stdout.flush()
         variable_to_restore = slim.get_variables_to_restore()
-        restorer = tf.train.Saver(variable_to_restore)
-        latest_checkpoint = tf.train.latest_checkpoint(log_dir)
-        restorer.restore(sess, latest_checkpoint)
+        init_assign_op, init_feed_dict = slim.assign_from_checkpoint(log_dir, variable_to_restore)
+        InitAssignFn = lambda x: x.run(init_assign_op, init_feed_dict)
+
 
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
@@ -77,8 +78,8 @@ with tf.Session(config=config) as sess:
     sys.stdout.flush()
     if tf.gfile.Exists(log_dir):
         tf.gfile.DeleteRecursively(log_dir)
-    slim.learning.train(train_op, log_dir, number_of_steps=int(1e6), save_summaries_secs=60 * 5,
-                        save_interval_secs=60 * 30, summary_op=summary_op)
+    slim.learning.train(train_op, log_dir, init_fn=InitAssignFn if restore_model else None, number_of_steps=int(1e6),
+                        save_summaries_secs=60 * 5, save_interval_secs=60 * 30, summary_op=summary_op)
 
     coord.request_stop()
     coord.join(threads)
