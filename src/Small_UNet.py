@@ -9,7 +9,7 @@ __email__ = "alex.ponamaryov@gmail.com"
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-from .NetUtils import _depthwise_separable_conv, _deconv, _lateral_connection
+from .NetUtils import _depthwise_separable_conv, _deconv, _lateral_connection, _inception_module
 
 def model(inputs, num_classes=1, is_training=True, keep_prob=0.5, width_multiplier=1, scope='MobileNet'):
 
@@ -26,12 +26,12 @@ def model(inputs, num_classes=1, is_training=True, keep_prob=0.5, width_multipli
 
                 c1 = slim.convolution2d(inputs, round(32 * width_multiplier), 3, stride=2, padding='SAME', scope='conv_1')
 
-                c2 = _depthwise_separable_conv(c1, 64, width_multiplier, downsample=True, sc='conv_ds_2')
-                c3 = _depthwise_separable_conv(c2, 128, width_multiplier, downsample=True, sc='conv_ds_3')
-                c4 = _depthwise_separable_conv(c3, 256, width_multiplier, downsample=True, sc='conv_ds_4')
-                c5 = _depthwise_separable_conv(c4, 512, width_multiplier, downsample=True, sc='conv_ds_5')
-                c6 = _depthwise_separable_conv(c5, 1024, width_multiplier, downsample=True, sc='conv_ds_6')
-                c7 = _depthwise_separable_conv(c6, 1024, width_multiplier, downsample=True, sc='conv_ds_7')
+                c2 = _inception_module(c1, 64, width_multiplier, downsample=True, sc='dw2')
+                c3 = _inception_module(c2, 128, width_multiplier, downsample=True, sc='dw3')
+                c4 = _inception_module(c3, 256, width_multiplier, downsample=True, sc='dw4')
+                c5 = _inception_module(c4, 512, width_multiplier, downsample=True, sc='dw5')
+                c6 = _depthwise_separable_conv(c5, 1024, width_multiplier, downsample=True, sc='dw6')
+                c7 = _depthwise_separable_conv(c6, 1024, width_multiplier, downsample=True, sc='dw7')
                 c7 = slim.dropout(c7, keep_prob)
 
                 # Upsampling path

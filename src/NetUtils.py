@@ -43,3 +43,21 @@ def _lateral_connection(top_down, bottom_up, num_pwc_filters, width_multiplier, 
 
     output = _concat((top_down, bottom_up), name=sc + "/merge")
     return _depthwise_separable_conv(output, num_pwc_filters, width_multiplier, sc=sc+"/force_choice")
+
+
+def _inception_module(input, num_pwc_filters, width_multiplier=1, downsample=True, sc="/inception"):
+    c = _depthwise_separable_conv(input, num_pwc_filters, width_multiplier, downsample=downsample, sc=sc + '/dw_sampling')
+    # Tower 1
+    t1 = _depthwise_separable_conv(c, num_pwc_filters, width_multiplier, sc=sc + '/t1/conv1')
+    t1 = _depthwise_separable_conv(t1, num_pwc_filters, width_multiplier, sc=sc + '/t1/conv2')
+    t1 = _depthwise_separable_conv(t1, num_pwc_filters, width_multiplier, sc=sc + '/t1/conv3')
+
+    # Tower 2
+    t2 = _depthwise_separable_conv(c, num_pwc_filters, width_multiplier, sc=sc + '/t2/conv1')
+
+    output = _concat((c, t1, t2), name=sc + "/merge")
+    output = _depthwise_separable_conv(output, num_pwc_filters, width_multiplier, sc=sc + '/output')
+
+    return output
+
+

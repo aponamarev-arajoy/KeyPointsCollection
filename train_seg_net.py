@@ -29,7 +29,6 @@ log_dir = FLAGS.log_dir
 learning_rate = FLAGS.learning_rate
 num_classes = 1
 restore_model = FLAGS.restore
-is_training = tf.placeholder(tf.bool, [], name="Mobile_UNet/input/is_training")
 
 # Define data provider
 sys.stdout.write("\r>> Initializing dataprovider")
@@ -83,4 +82,3 @@ with tf.Session(config=config) as sess:
 
     coord.request_stop()
     coord.join(threads)
-

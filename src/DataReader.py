@@ -77,6 +77,23 @@ def random_flip_left_right_segmentation(img, mask):
 
     return img, mask
 
+def random_central_crop_for_segmentation(img, mask, height, width, fraction=0.7):
+
+    uniform_random = random_ops.random_uniform([], 0, 1.0, seed=None)
+    mirror_cond = math_ops.less(uniform_random, .5)
+
+    img = control_flow_ops.cond(mirror_cond,
+                                lambda : tf.image.resize_images(tf.image.central_crop(img, fraction),
+                                                                size=[height, width]), lambda: img)
+
+    mask = tf.cast(mask, tf.float32)
+    mask = control_flow_ops.cond(mirror_cond,
+                                 lambda: tf.image.resize_images(tf.image.central_crop(mask, fraction),
+                                                                size=[height, width]), lambda: mask)
+    mask = tf.cast(mask, tf.uint8)
+
+    return img, mask
+
 
 def read_and_decode(filename_queue, IMAGE_HEIGHT, IMAGE_WIDTH, num_classes=1, batch_size=5, color_dist=False):
     reader = TFRecordReader()
@@ -118,12 +135,12 @@ def read_and_decode(filename_queue, IMAGE_HEIGHT, IMAGE_WIDTH, num_classes=1, ba
 
         images = tf.identity(tf.cast(images, tf.float32) / 255.0, name="img_in_-1_1_range")
 
-        def prep_data_augment(im):
-            im = distort_color(im, color_ordering=0, fast_mode=True)
-            return im
+        color_aug   = lambda x: distort_color(x, color_ordering=0, fast_mode=True)
 
-        images = tf.map_fn(prep_data_augment, images)
+        images = tf.map_fn(color_aug, images)
         images, annotations = tf.map_fn(lambda x: random_flip_left_right_segmentation(x[0], x[1]),
+                                        (images, annotations), dtype=(tf.float32, tf.uint8))
+        images, annotations = tf.map_fn(lambda x: random_central_crop_for_segmentation(x[0], x[1], IMAGE_HEIGHT, IMAGE_WIDTH),
                                         (images, annotations), dtype=(tf.float32, tf.uint8))
 
         images = tf.identity(tf.cast(images * 255.0, tf.uint8), name="img_augmented")

@@ -21,8 +21,8 @@ except:
     imageio.plugins.ffmpeg.download()
     from moviepy.editor import VideoFileClip
 
-IMAGE_HEIGHT=512
-IMAGE_WIDTH=1024
+IMAGE_HEIGHT=int(512/2)
+IMAGE_WIDTH=int(1024/2)
 num_classes=1
 threshold = 0.75
 
