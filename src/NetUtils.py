@@ -22,7 +22,9 @@ def _depthwise_separable_conv(inputs, num_pwc_filters, width_multiplier, sc='/de
     # skip pointwise by setting num_outputs=None
     conv = separable_convolution2d(inputs, num_outputs=None, stride=_stride, depth_multiplier=1,
                                    kernel_size=3, scope=sc + '/depthwise_conv')
+    conv = batch_norm(conv, scope=sc+'/dw_bn')
     conv = convolution2d(conv, num_pwc_filters, kernel_size=1, scope=sc + '/pointwise_conv')
+    conv = batch_norm(conv, scope=sc + '/pw_bn')
 
     return conv
 
@@ -32,6 +34,7 @@ def _concat(*arg, axis=-1, name='merge'):
 def _deconv(input, num_pwc_filters, width_multiplier=1, strides=2, padding="SAME", sc="/deconv"):
     num_pwc_filters = round(num_pwc_filters * width_multiplier)
     conv = conv2d_transpose(input, num_pwc_filters, kernel_size=3, stride=strides, padding=padding,scope=sc + "/deconv")
+    conv = batch_norm(conv, scope=sc + '/bn')
     return conv
 
 

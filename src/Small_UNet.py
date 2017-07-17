@@ -16,8 +16,7 @@ def model(inputs, num_classes=1, is_training=True, keep_prob=0.5, width_multipli
     with tf.variable_scope(scope) as sc:
         end_points_collection = sc.name + '_end_points'
         with slim.arg_scope([slim.convolution2d, slim.separable_convolution2d],
-                            activation_fn=None,
-                            normalizer_fn=slim.batch_norm):
+                            activation_fn=None):
             with slim.arg_scope([slim.batch_norm],
                                 is_training=is_training,
                                 activation_fn=tf.nn.relu):
