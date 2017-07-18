@@ -66,7 +66,8 @@ with tf.Session(config=config) as sess:
         sys.stdout.write("\r>> Restoring trainable variables.")
         sys.stdout.flush()
         variable_to_restore = slim.get_variables_to_restore()
-        init_assign_op, init_feed_dict = slim.assign_from_checkpoint(log_dir, variable_to_restore)
+        latest_checkpoint = tf.train.latest_checkpoint(log_dir)
+        init_assign_op, init_feed_dict = slim.assign_from_checkpoint(latest_checkpoint, variable_to_restore)
         InitAssignFn = lambda x: x.run(init_assign_op, init_feed_dict)
 
 

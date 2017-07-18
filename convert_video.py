@@ -28,10 +28,10 @@ threshold = 0.75
 
 FLAGS = flags.FLAGS
 flags.DEFINE_bool("restore", True, "Do you want to restore a model? Default value is True.")
-flags.DEFINE_string("log_dir", "logs", "Provide logging directory for recovering and storing model. Default value is logs")
+flags.DEFINE_string("log_dir", "logs/inception_style", "Provide logging directory for recovering and storing model. Default value is logs/inception_style")
 flags.DEFINE_string("video", "video.mp4", "Provide a relative path to a video file to be processed. Default value: video.mpg")
 flags.DEFINE_string("save_to", "output_video.mp4", "Provide a relative path for a resulting video. Default value: output_video.mp4")
-flags.DEFINE_float("width", 1.0, "Set the net width multiple. Default is 1.0. Type Float")
+flags.DEFINE_float("width", 1.0, "Set the net width multiple. Default is 0.5. Type Float")
 
 computation = {"segmentation_layer": None, "input_img_placeholder": None, "session": None}
 
